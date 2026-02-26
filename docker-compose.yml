@@ -1,0 +1,88 @@
+version: "3.9"
+
+# ── NexaBase docker-compose ───────────────────────────────────────────────────
+# Services:
+#   frontend  — Next.js 14 (App Router)  → http://localhost:3000
+#   backend   — FastAPI + LangChain      → http://localhost:8000
+#   nginx     — Reverse proxy (optional) → http://localhost:80
+#
+# External services (not containerised — use cloud):
+#   Supabase  → https://supabase.com
+#   Stripe    → https://stripe.com
+#   OpenAI    → https://platform.openai.com
+
+services:
+  # ────────────────────────────────────────────────────────────────────────────
+  # Backend — FastAPI
+  # ────────────────────────────────────────────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: nexabase_backend
+    restart: unless-stopped
+    env_file: ./backend/.env
+    environment:
+      - APP_NAME=NexaBase
+      - DEBUG=false
+    ports:
+      - "8000:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    networks:
+      - nexabase
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # Frontend — Next.js
+  # ────────────────────────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: nexabase_frontend
+    restart: unless-stopped
+    env_file: ./frontend/.env.local
+    environment:
+      - NEXT_PUBLIC_API_URL=http://backend:8000
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    networks:
+      - nexabase
+
+  # ────────────────────────────────────────────────────────────────────────────
+  # Nginx — optional TLS termination + reverse proxy
+  # ────────────────────────────────────────────────────────────────────────────
+  nginx:
+    image: nginx:1.27-alpine
+    container_name: nexabase_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/certs:/etc/nginx/certs:ro
+    depends_on:
+      - frontend
+      - backend
+    networks:
+      - nexabase
+    profiles:
+      - production  # only started when: docker compose --profile production up
+
+networks:
+  nexabase:
+    driver: bridge
