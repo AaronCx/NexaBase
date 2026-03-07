@@ -26,7 +26,7 @@ export default async function DashboardPage() {
     .from("profiles")
     .select("*")
     .eq("id", session.user.id)
-    .single();
+    .single() as { data: { tier: string; messages_used_this_month: number; full_name: string | null } | null };
 
   const tier = profile?.tier ?? "free";
   const used = profile?.messages_used_this_month ?? 0;

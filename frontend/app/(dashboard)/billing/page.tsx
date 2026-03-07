@@ -16,7 +16,7 @@ export default async function BillingPage() {
     .from("profiles")
     .select("tier, stripe_customer_id")
     .eq("id", session.user.id)
-    .single();
+    .single() as { data: { tier: string; stripe_customer_id: string | null } | null };
 
   return (
     <div className="max-w-4xl space-y-8">
