@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Bot, LayoutDashboard, MessageSquare, CreditCard, LogOut } from "lucide-react";
+import { Bot, LayoutDashboard, MessageSquare, CreditCard, Settings, LogOut } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
@@ -13,6 +13,7 @@ const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/chat", label: "AI Chat", icon: MessageSquare },
   { href: "/billing", label: "Billing", icon: CreditCard },
+  { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 export function DashboardNav({ user }: { user: User }) {
