@@ -5,7 +5,7 @@ import type { NextRequest } from "next/server";
 // Routes that require authentication
 const PROTECTED_ROUTES = ["/dashboard", "/chat", "/billing", "/settings"];
 // Routes only accessible to unauthenticated users
-const AUTH_ROUTES = ["/login", "/register"];
+const AUTH_ROUTES = ["/login", "/register", "/forgot-password", "/reset-password"];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -71,5 +71,7 @@ export const config = {
     "/settings/:path*",
     "/login",
     "/register",
+    "/forgot-password",
+    "/reset-password",
   ],
 };

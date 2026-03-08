@@ -95,6 +95,12 @@ export default function LoginPage() {
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Sign in
               </Button>
+              <Link
+                href="/forgot-password"
+                className="text-sm text-muted-foreground hover:text-primary transition-colors"
+              >
+                Forgot your password?
+              </Link>
               <p className="text-sm text-muted-foreground text-center">
                 Don&apos;t have an account?{" "}
                 <Link
