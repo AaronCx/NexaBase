@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createServerClient } from "@/lib/supabase/server";
+import { createServerClient, isSupabaseConfigured } from "@/lib/supabase/server";
 import { DashboardNav } from "@/components/DashboardNav";
 
 export const dynamic = "force-dynamic";
@@ -9,6 +9,10 @@ export default async function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+  if (!isSupabaseConfigured()) {
+    redirect("/login");
+  }
+
   const supabase = createServerClient();
   const {
     data: { session },
