@@ -7,7 +7,7 @@ passlib[bcrypt]==1.7.4
 python-multipart==0.0.20
 httpx==0.28.1
 supabase==2.11.0
-gotrue==2.9.1
+gotrue>=2.11.0,<3.0.0
 stripe==11.4.0
 langchain==0.3.14
 langchain-openai==0.3.0
