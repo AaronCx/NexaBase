@@ -54,7 +54,17 @@ app.include_router(billing.router, prefix="/api/v1")
 # ── Health check ──────────────────────────────────────────────────────────────
 @app.get("/health", tags=["health"])
 async def health():
-    return {"status": "ok", "app": settings.APP_NAME, "version": "1.0.0"}
+    checks = {
+        "supabase": bool(settings.SUPABASE_URL and settings.SUPABASE_SERVICE_KEY),
+        "openai": bool(settings.OPENAI_API_KEY),
+        "stripe": bool(settings.STRIPE_SECRET_KEY),
+    }
+    return {
+        "status": "ok",
+        "app": settings.APP_NAME,
+        "version": "1.0.0",
+        "services": checks,
+    }
 
 
 @app.get("/", include_in_schema=False)
