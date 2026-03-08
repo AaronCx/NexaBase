@@ -7,6 +7,7 @@ import type { User } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import { ConnectionStatus } from "@/components/ConnectionStatus";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -56,6 +57,7 @@ export function DashboardNav({ user }: { user: User }) {
 
           {/* User actions */}
           <div className="flex items-center gap-3">
+            <ConnectionStatus />
             <span className="text-sm text-muted-foreground hidden sm:block truncate max-w-[180px]">
               {user.email}
             </span>
