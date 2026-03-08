@@ -21,6 +21,7 @@ export function useChat({ token, conversationId: initialConvId }: UseChatOptions
     initialConvId
   );
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [usage, setUsage] = useState<{
     used: number;
     limit: number;
@@ -80,6 +81,33 @@ export function useChat({ token, conversationId: initialConvId }: UseChatOptions
     [messages, conversationId, isLoading, token]
   );
 
+  const loadConversation = useCallback(
+    async (convId: string) => {
+      setIsLoadingHistory(true);
+      setError(null);
+      try {
+        const data = await chatApi.getMessages(convId, token);
+        const loaded: Message[] = (data.messages ?? []).map(
+          (m: ChatMessage, i: number) => ({
+            id: `${convId}-${i}`,
+            role: m.role as "user" | "assistant",
+            content: m.content,
+            timestamp: new Date(),
+          })
+        );
+        setMessages(loaded);
+        setConversationId(convId);
+      } catch (err: unknown) {
+        const errMsg =
+          err instanceof Error ? err.message : "Failed to load conversation";
+        setError(errMsg);
+      } finally {
+        setIsLoadingHistory(false);
+      }
+    },
+    [token]
+  );
+
   const clearMessages = useCallback(() => {
     setMessages([]);
     setConversationId(undefined);
@@ -90,7 +118,9 @@ export function useChat({ token, conversationId: initialConvId }: UseChatOptions
     messages,
     sendMessage,
     clearMessages,
+    loadConversation,
     isLoading,
+    isLoadingHistory,
     usage,
     error,
     conversationId,
