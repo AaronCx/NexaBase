@@ -1,9 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from gotrue.errors import AuthApiError
 
 from app.core.config import settings
 from app.core.database import get_supabase
 from app.core.security import create_access_token, get_current_user
+from app.middleware.rate_limit import auth_limiter
 from app.models.schemas import (
     TokenResponse,
     UserLogin,
@@ -15,8 +16,19 @@ from app.models.schemas import (
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
+def _check_auth_rate_limit(request: Request) -> None:
+    client_ip = request.client.host if request.client else "unknown"
+    allowed, _ = auth_limiter.is_allowed(client_ip)
+    if not allowed:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Too many attempts. Please try again later.",
+        )
+
+
 @router.post("/register", response_model=TokenResponse, status_code=status.HTTP_201_CREATED)
-async def register(body: UserRegister):
+async def register(body: UserRegister, request: Request):
+    _check_auth_rate_limit(request)
     sb = get_supabase()
     try:
         res = sb.auth.sign_up(
@@ -55,7 +67,8 @@ async def register(body: UserRegister):
 
 
 @router.post("/login", response_model=TokenResponse)
-async def login(body: UserLogin):
+async def login(body: UserLogin, request: Request):
+    _check_auth_rate_limit(request)
     sb = get_supabase()
     try:
         res = sb.auth.sign_in_with_password(

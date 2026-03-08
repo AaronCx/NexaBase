@@ -2,10 +2,20 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.responses import StreamingResponse
 
 from app.core.security import get_current_user
+from app.middleware.rate_limit import chat_limiter
 from app.models.schemas import ChatRequest, ChatResponse
 from app.services import langchain_service, usage_service
 
 router = APIRouter(prefix="/chat", tags=["chat"])
+
+
+def _check_rate_limit(user_id: str) -> None:
+    allowed, remaining = chat_limiter.is_allowed(user_id)
+    if not allowed:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Too many requests. Please wait before sending more messages.",
+        )
 
 
 @router.post("", response_model=ChatResponse)
@@ -14,6 +24,7 @@ async def send_message(
     current_user: dict = Depends(get_current_user),
 ):
     user_id = current_user["id"]
+    _check_rate_limit(user_id)
 
     # Check & increment usage (raises 429 if over quota)
     usage = await usage_service.check_and_increment(user_id)
@@ -41,6 +52,7 @@ async def stream_message(
 ):
     """SSE streaming endpoint."""
     user_id = current_user["id"]
+    _check_rate_limit(user_id)
 
     # Check & increment usage
     await usage_service.check_and_increment(user_id)
