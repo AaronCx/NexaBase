@@ -65,7 +65,7 @@ create trigger profiles_updated_at
 
 -- ── Conversations ─────────────────────────────────────────────────────────────
 create table if not exists public.conversations (
-  id         uuid        primary key default uuid_generate_v4(),
+  id         uuid        primary key default gen_random_uuid(),
   user_id    uuid        not null references public.profiles(id) on delete cascade,
   title      text        not null default 'New conversation',
   created_at timestamptz not null default now(),
@@ -84,7 +84,7 @@ create trigger conversations_updated_at
 create type public.message_role as enum ('user', 'assistant', 'system');
 
 create table if not exists public.messages (
-  id              uuid         primary key default uuid_generate_v4(),
+  id              uuid         primary key default gen_random_uuid(),
   conversation_id uuid         not null references public.conversations(id) on delete cascade,
   role            message_role not null,
   content         text         not null,
@@ -120,7 +120,7 @@ create trigger messages_update_conversation
 
 -- ── Usage Logs ────────────────────────────────────────────────────────────────
 create table if not exists public.usage_logs (
-  id          uuid        primary key default uuid_generate_v4(),
+  id          uuid        primary key default gen_random_uuid(),
   user_id     uuid        not null references public.profiles(id) on delete cascade,
   action      text        not null,
   tokens_used integer,
