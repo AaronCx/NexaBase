@@ -2,6 +2,8 @@
 
 > **Next.js 14 (App Router) · FastAPI · LangChain · Supabase · Stripe · OpenAI**
 
+**[Live Demo](https://nexabase.vercel.app)**
+
 NexaBase is a full-stack, production-ready SaaS starter kit that gives you everything you need to ship an AI-powered application:
 
 - 🔐 **Auth** — Supabase Auth with JWT, protected routes via Next.js middleware
@@ -85,8 +87,8 @@ Create accounts at:
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/YOUR_ORG/nexabase.git
-cd nexabase
+git clone https://github.com/AaronCx/NexaBase.git
+cd NexaBase
 ```
 
 ### 2. Set up the backend
@@ -204,7 +206,7 @@ The backend uses the **service role** key which bypasses RLS — this is intenti
 
 2. Create a webhook endpoint:
    - *Developers -> Webhooks -> Add endpoint*
-   - URL: `https://yourdomain.com/api/webhooks/stripe`
+   - URL: `https://your-domain.com/api/webhooks/stripe`
    - Events to listen for:
      - `checkout.session.completed`
      - `customer.subscription.created`
@@ -365,10 +367,12 @@ FastAPI raises HTTP 429 on quota exhaustion.
 
 ## Deployment
 
-### Vercel + Railway/Fly.io
+### Production (Vercel)
 
-1. **Backend**: Deploy `backend/` to Railway, Fly.io, or any container host
-2. **Frontend**: Deploy `frontend/` to Vercel; set `NEXT_PUBLIC_API_URL` to backend URL
+The frontend is deployed on **Vercel** at [nexabase.vercel.app](https://nexabase.vercel.app).
+
+1. **Frontend**: Deploy `frontend/` to Vercel; set `NEXT_PUBLIC_API_URL` to backend URL
+2. **Backend**: Deploy `backend/` to any container host (Render, Railway, Fly.io)
 3. Update Stripe webhook URL to production domain
 4. Push migrations to production Supabase project
 
