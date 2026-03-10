@@ -68,6 +68,30 @@ export default function LoginPage() {
           <span className="text-2xl font-bold">NexaBase</span>
         </div>
 
+        <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 mb-4">
+          <p className="text-sm font-semibold text-blue-900 mb-2">
+            Try NexaBase with a demo account
+          </p>
+          <div className="flex flex-col gap-2">
+            {DEMO_ACCOUNTS.map((account) => (
+              <button
+                key={account.email}
+                type="button"
+                onClick={() => fillDemo(account)}
+                className="flex items-center justify-between rounded-md bg-white px-3 py-2 text-sm border border-blue-200 hover:border-blue-400 hover:bg-blue-50/50 transition-colors"
+              >
+                <span className="font-medium text-blue-800">{account.label}</span>
+                <span className="text-blue-600 font-mono text-xs">
+                  {account.email} / {account.password}
+                </span>
+              </button>
+            ))}
+          </div>
+          <p className="text-xs text-blue-600 mt-2">
+            Click an account above to fill in the credentials
+          </p>
+        </div>
+
         <Card>
           <CardHeader>
             <CardTitle>Welcome back</CardTitle>
@@ -124,29 +148,6 @@ export default function LoginPage() {
           </form>
         </Card>
 
-        <Card className="mt-4">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Demo Accounts</CardTitle>
-            <CardDescription className="text-xs">
-              Click to fill credentials, then sign in
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2 pt-0">
-            {DEMO_ACCOUNTS.map((account) => (
-              <button
-                key={account.email}
-                type="button"
-                onClick={() => fillDemo(account)}
-                className="w-full text-left px-3 py-2 rounded-md border text-sm hover:bg-slate-50 transition-colors"
-              >
-                <span className="font-medium">{account.label}</span>
-                <span className="text-muted-foreground ml-2">
-                  {account.email} / {account.password}
-                </span>
-              </button>
-            ))}
-          </CardContent>
-        </Card>
       </div>
     </div>
   );
