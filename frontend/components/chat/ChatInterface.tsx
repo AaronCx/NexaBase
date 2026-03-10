@@ -110,7 +110,7 @@ export function ChatInterface({ token }: Props) {
 
           {!isLoadingHistory && messages.length === 0 && (
             <div className="flex flex-col items-center justify-center h-full text-center py-12">
-              <div className="text-4xl mb-4">🤖</div>
+              <div className="text-4xl mb-4">AI</div>
               <h3 className="text-lg font-semibold mb-2">How can I help you?</h3>
               <p className="text-muted-foreground text-sm max-w-sm">
                 Ask me anything — I&apos;m powered by GPT-4o mini via LangChain
