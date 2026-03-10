@@ -6,13 +6,13 @@
 
 NexaBase is a full-stack, production-ready SaaS starter kit that gives you everything you need to ship an AI-powered application:
 
-- 🔐 **Auth** — Supabase Auth with JWT, protected routes via Next.js middleware
-- 🤖 **AI Chat** — OpenAI GPT-4o mini via LangChain, conversation history, streaming SSE
-- 💳 **Billing** — Stripe subscriptions (Free / Pro), webhooks, customer portal
-- 📊 **Usage Tracking** — Atomic per-user monthly quota via a Supabase RPC
-- 🔍 **Error Logging** — Middleware that POSTs unhandled exceptions to any configurable endpoint
-- 🐳 **Docker** — Single `docker compose up` for local development or production
-- 🗄️ **Migrations** — Supabase SQL migrations with RLS, triggers, views, and indexes
+- **Auth** — Supabase Auth with JWT, protected routes via Next.js middleware
+- **AI Chat** — OpenAI GPT-4o mini via LangChain, conversation history, streaming SSE
+- **Billing** — Stripe subscriptions (Free / Pro), webhooks, customer portal
+- **Usage Tracking** — Atomic per-user monthly quota via a Supabase RPC
+- **Error Logging** — Middleware that POSTs unhandled exceptions to any configurable endpoint
+- **Docker** — Single `docker compose up` for local development or production
+- **Migrations** — Supabase SQL migrations with RLS, triggers, views, and indexes
 
 ---
 
