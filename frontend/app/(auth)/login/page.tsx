@@ -18,6 +18,11 @@ import {
 } from "@/components/ui/card";
 import { toast } from "@/hooks/useToast";
 
+const DEMO_ACCOUNTS = [
+  { email: "demo@nexabase.app", password: "demo1234", label: "Demo User" },
+  { email: "test@nexabase.app", password: "test1234", label: "Test User" },
+];
+
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -26,6 +31,11 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get("redirectTo") || "/dashboard";
   const supabase = createClient();
+
+  function fillDemo(account: (typeof DEMO_ACCOUNTS)[number]) {
+    setEmail(account.email);
+    setPassword(account.password);
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -112,6 +122,30 @@ export default function LoginPage() {
               </p>
             </CardFooter>
           </form>
+        </Card>
+
+        <Card className="mt-4">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium">Demo Accounts</CardTitle>
+            <CardDescription className="text-xs">
+              Click to fill credentials, then sign in
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2 pt-0">
+            {DEMO_ACCOUNTS.map((account) => (
+              <button
+                key={account.email}
+                type="button"
+                onClick={() => fillDemo(account)}
+                className="w-full text-left px-3 py-2 rounded-md border text-sm hover:bg-slate-50 transition-colors"
+              >
+                <span className="font-medium">{account.label}</span>
+                <span className="text-muted-foreground ml-2">
+                  {account.email} / {account.password}
+                </span>
+              </button>
+            ))}
+          </CardContent>
         </Card>
       </div>
     </div>

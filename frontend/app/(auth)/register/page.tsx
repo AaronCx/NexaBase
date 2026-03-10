@@ -58,11 +58,27 @@ export default function RegisterPage() {
       return;
     }
 
-    toast({
-      title: "Account created!",
-      description: "Check your email to confirm your account.",
+    // Auto-login after signup (no email confirmation required)
+    const { error: loginError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
     });
-    router.push("/login");
+
+    if (loginError) {
+      toast({
+        title: "Account created!",
+        description: "You can now sign in with your credentials.",
+      });
+      router.push("/login");
+      return;
+    }
+
+    toast({
+      title: "Welcome to NexaBase!",
+      description: "Your account is ready to use.",
+    });
+    router.push("/dashboard");
+    router.refresh();
   }
 
   return (
