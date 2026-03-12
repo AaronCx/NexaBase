@@ -1,6 +1,6 @@
 # NexaBase — Production-Ready AI SaaS Starter
 
-> **Next.js 14 (App Router) · FastAPI · LangChain · Supabase · Stripe · OpenAI**
+> **Next.js 14 (App Router) · FastAPI · LangChain · Supabase · Stripe · OpenAI · Bun**
 
 **[Live Demo](https://nexabase.vercel.app)**
 
