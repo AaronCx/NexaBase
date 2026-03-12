@@ -69,6 +69,7 @@ NexaBase is a full-stack, production-ready SaaS starter kit that gives you every
 
 | Tool | Version |
 |------|---------|
+| Bun | >= 1.0 |
 | Node.js | >= 20 |
 | Python | >= 3.12 |
 | Docker + Compose | >= 24 |
@@ -109,8 +110,8 @@ API docs available at: `http://localhost:8000/docs` (only when `DEBUG=true`)
 ```bash
 cd frontend
 cp .env.local.example .env.local   # Fill in all values
-npm install
-npm run dev
+bun install
+bun run dev
 ```
 
 App available at: `http://localhost:3000`
