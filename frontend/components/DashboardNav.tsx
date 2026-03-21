@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Bot, LayoutDashboard, MessageSquare, CreditCard, Settings, LogOut } from "lucide-react";
 import type { User } from "@supabase/supabase-js";
-import { createClient } from "@/lib/supabase/client";
+import { isDemoMode } from "@/lib/config";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { ConnectionStatus } from "@/components/ConnectionStatus";
@@ -19,10 +19,13 @@ const navItems = [
 export function DashboardNav({ user }: { user: User }) {
   const pathname = usePathname();
   const router = useRouter();
-  const supabase = createClient();
 
   async function handleLogout() {
-    await supabase.auth.signOut();
+    if (!isDemoMode) {
+      const { createClient } = await import("@/lib/supabase/client");
+      const supabase = createClient();
+      await supabase.auth.signOut();
+    }
     router.push("/login");
     router.refresh();
   }
@@ -58,7 +61,7 @@ export function DashboardNav({ user }: { user: User }) {
 
           {/* User actions */}
           <div className="flex items-center gap-3">
-            <ConnectionStatus />
+            {!isDemoMode && <ConnectionStatus />}
             <span className="text-sm text-muted-foreground hidden sm:block truncate max-w-[180px]">
               {user.email}
             </span>

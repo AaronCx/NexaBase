@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Bot, Loader2 } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { isDemoMode } from "@/lib/config";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -24,10 +24,14 @@ export default function RegisterPage() {
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const supabase = createClient();
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+
+    if (isDemoMode) {
+      router.push("/dashboard");
+      return;
+    }
 
     if (password.length < 8) {
       toast({
@@ -39,6 +43,9 @@ export default function RegisterPage() {
     }
 
     setLoading(true);
+
+    const { createClient } = await import("@/lib/supabase/client");
+    const supabase = createClient();
 
     const { error } = await supabase.auth.signUp({
       email,
@@ -89,11 +96,27 @@ export default function RegisterPage() {
           <span className="text-2xl font-bold">NexaBase</span>
         </div>
 
-        <Card>
+        {isDemoMode && (
+          <div className="rounded-lg border border-blue-200 bg-blue-50 p-4 mb-4">
+            <p className="text-sm font-semibold text-blue-900 mb-2">
+              Demo Mode
+            </p>
+            <p className="text-sm text-blue-700 mb-3">
+              Sign up is disabled in demo mode. Jump straight into the app with a pre-configured Pro account.
+            </p>
+            <Button onClick={() => router.push("/dashboard")} className="w-full">
+              Enter Demo
+            </Button>
+          </div>
+        )}
+
+        <Card className={isDemoMode ? "opacity-60 pointer-events-none" : ""}>
           <CardHeader>
             <CardTitle>Create your account</CardTitle>
             <CardDescription>
-              Get started with 50 free AI messages per month
+              {isDemoMode
+                ? "Sign up is disabled in demo mode."
+                : "Get started with 50 free AI messages per month"}
             </CardDescription>
           </CardHeader>
           <form onSubmit={handleSubmit}>
@@ -107,6 +130,7 @@ export default function RegisterPage() {
                   value={fullName}
                   onChange={(e) => setFullName(e.target.value)}
                   autoComplete="name"
+                  disabled={isDemoMode}
                 />
               </div>
               <div className="space-y-2">
@@ -117,8 +141,9 @@ export default function RegisterPage() {
                   placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  required
+                  required={!isDemoMode}
                   autoComplete="email"
+                  disabled={isDemoMode}
                 />
               </div>
               <div className="space-y-2">
@@ -129,14 +154,15 @@ export default function RegisterPage() {
                   placeholder="Min. 8 characters"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  required
+                  required={!isDemoMode}
                   minLength={8}
                   autoComplete="new-password"
+                  disabled={isDemoMode}
                 />
               </div>
             </CardContent>
             <CardFooter className="flex flex-col gap-3">
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button type="submit" className="w-full" disabled={loading || isDemoMode}>
                 {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Create account
               </Button>

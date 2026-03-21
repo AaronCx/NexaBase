@@ -13,7 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { createClient } from "@/lib/supabase/client";
+import { isDemoMode } from "@/lib/config";
 import { toast } from "@/hooks/useToast";
 
 interface Props {
@@ -34,8 +34,13 @@ export function SettingsContent({ user }: Props) {
 
   async function handleUpdateProfile(e: React.FormEvent) {
     e.preventDefault();
+    if (isDemoMode) {
+      toast({ title: "Demo mode", description: "Profile updates are disabled in demo mode." });
+      return;
+    }
     setSaving(true);
     try {
+      const { createClient } = await import("@/lib/supabase/client");
       const supabase = createClient();
       const { error } = await supabase.auth.updateUser({
         data: { full_name: fullName },
@@ -55,6 +60,10 @@ export function SettingsContent({ user }: Props) {
 
   async function handleChangePassword(e: React.FormEvent) {
     e.preventDefault();
+    if (isDemoMode) {
+      toast({ title: "Demo mode", description: "Password changes are disabled in demo mode." });
+      return;
+    }
     if (newPassword.length < 8) {
       toast({
         variant: "destructive",
@@ -65,6 +74,7 @@ export function SettingsContent({ user }: Props) {
     }
     setChangingPassword(true);
     try {
+      const { createClient } = await import("@/lib/supabase/client");
       const supabase = createClient();
       const { error } = await supabase.auth.updateUser({
         password: newPassword,

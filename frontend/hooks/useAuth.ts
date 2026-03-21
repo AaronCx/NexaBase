@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { createClient } from "@/lib/supabase/client";
+import { isDemoMode } from "@/lib/config";
 import type { User, Session } from "@supabase/supabase-js";
 
 interface AuthState {
@@ -19,32 +19,51 @@ export function useAuth(): AuthState {
     token: null,
   });
 
-  const supabase = createClient();
-
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setState({
-        user: session?.user ?? null,
-        session,
-        loading: false,
-        token: session?.access_token ?? null,
-      });
-    });
+    if (isDemoMode) {
+      // In demo mode, return a synthetic user immediately
+      const demoUser = {
+        id: "demo-user-001",
+        email: "demo@nexabase.app",
+        user_metadata: { full_name: "Demo User" },
+        created_at: "2025-12-01T00:00:00Z",
+      } as unknown as User;
 
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
       setState({
-        user: session?.user ?? null,
-        session,
+        user: demoUser,
+        session: { access_token: "demo-token" } as unknown as Session,
         loading: false,
-        token: session?.access_token ?? null,
+        token: "demo-token",
       });
-    });
+      return;
+    }
 
-    return () => subscription.unsubscribe();
+    // Real Supabase auth
+    import("@/lib/supabase/client").then(({ createClient }) => {
+      const supabase = createClient();
+
+      supabase.auth.getSession().then(({ data: { session } }) => {
+        setState({
+          user: session?.user ?? null,
+          session,
+          loading: false,
+          token: session?.access_token ?? null,
+        });
+      });
+
+      const {
+        data: { subscription },
+      } = supabase.auth.onAuthStateChange((_event, session) => {
+        setState({
+          user: session?.user ?? null,
+          session,
+          loading: false,
+          token: session?.access_token ?? null,
+        });
+      });
+
+      return () => subscription.unsubscribe();
+    });
   }, []);
 
   return state;

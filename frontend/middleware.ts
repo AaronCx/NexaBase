@@ -2,6 +2,8 @@ import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
+const isDemoMode = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
+
 // Routes that require authentication
 const PROTECTED_ROUTES = ["/dashboard", "/chat", "/billing", "/settings"];
 // Routes only accessible to unauthenticated users
@@ -9,6 +11,14 @@ const AUTH_ROUTES = ["/login", "/register", "/forgot-password", "/reset-password
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Demo mode: skip all auth checks, redirect login→dashboard
+  if (isDemoMode) {
+    if (AUTH_ROUTES.some((route) => pathname.startsWith(route))) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+    return NextResponse.next();
+  }
 
   // Skip middleware for routes that don't need auth checks
   const needsAuthCheck =

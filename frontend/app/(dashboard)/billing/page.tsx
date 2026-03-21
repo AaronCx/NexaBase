@@ -1,22 +1,38 @@
 import { redirect } from "next/navigation";
-import { createServerClient } from "@/lib/supabase/server";
+import { isDemoMode } from "@/lib/config";
+import { DEMO_PROFILE } from "@/lib/demo/data";
 import { BillingContent } from "@/components/billing/BillingContent";
 
 export const metadata = { title: "Billing" };
 
 export default async function BillingPage() {
-  const supabase = createServerClient();
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  let token: string;
+  let currentTier: "free" | "pro";
+  let stripeCustomerId: string | null;
 
-  if (!session) redirect("/login");
+  if (isDemoMode) {
+    token = "demo-token";
+    currentTier = DEMO_PROFILE.tier;
+    stripeCustomerId = DEMO_PROFILE.stripe_customer_id;
+  } else {
+    const { createServerClient } = await import("@/lib/supabase/server");
+    const supabase = createServerClient();
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
 
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("tier, stripe_customer_id")
-    .eq("id", session.user.id)
-    .single() as { data: { tier: string; stripe_customer_id: string | null } | null };
+    if (!session) redirect("/login");
+    token = session.access_token;
+
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("tier, stripe_customer_id")
+      .eq("id", session.user.id)
+      .single() as { data: { tier: string; stripe_customer_id: string | null } | null };
+
+    currentTier = (profile?.tier ?? "free") as "free" | "pro";
+    stripeCustomerId = profile?.stripe_customer_id ?? null;
+  }
 
   return (
     <div className="max-w-4xl space-y-8">
@@ -27,9 +43,9 @@ export default async function BillingPage() {
         </p>
       </div>
       <BillingContent
-        token={session.access_token}
-        currentTier={(profile?.tier ?? "free") as "free" | "pro"}
-        stripeCustomerId={profile?.stripe_customer_id ?? null}
+        token={token}
+        currentTier={currentTier}
+        stripeCustomerId={stripeCustomerId}
       />
     </div>
   );

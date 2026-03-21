@@ -1,10 +1,36 @@
 import { redirect } from "next/navigation";
-import { createServerClient, isSupabaseConfigured } from "@/lib/supabase/server";
+import { isDemoMode } from "@/lib/config";
+import { DEMO_PROFILE } from "@/lib/demo/data";
 import { SettingsContent } from "@/components/settings/SettingsContent";
 
 export const metadata = { title: "Settings" };
 
 export default async function SettingsPage() {
+  if (isDemoMode) {
+    return (
+      <div className="max-w-2xl space-y-8">
+        <div>
+          <h1 className="text-3xl font-bold">Settings</h1>
+          <p className="text-muted-foreground mt-1">
+            Manage your account and preferences.
+          </p>
+        </div>
+        <SettingsContent
+          user={{
+            email: DEMO_PROFILE.email,
+            fullName: DEMO_PROFILE.full_name ?? "",
+            tier: DEMO_PROFILE.tier,
+            createdAt: DEMO_PROFILE.created_at,
+          }}
+        />
+      </div>
+    );
+  }
+
+  const { isSupabaseConfigured, createServerClient } = await import(
+    "@/lib/supabase/server"
+  );
+
   if (!isSupabaseConfigured()) redirect("/login");
 
   const supabase = createServerClient();

@@ -1,7 +1,8 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { MessageSquare, CreditCard, Zap, TrendingUp } from "lucide-react";
-import { createServerClient } from "@/lib/supabase/server";
+import { isDemoMode } from "@/lib/config";
+import { DEMO_PROFILE } from "@/lib/demo/data";
 import {
   Card,
   CardContent,
@@ -14,7 +15,16 @@ import { Button } from "@/components/ui/button";
 
 export const metadata = { title: "Dashboard" };
 
-export default async function DashboardPage() {
+async function getProfileData() {
+  if (isDemoMode) {
+    return {
+      fullName: DEMO_PROFILE.full_name,
+      tier: DEMO_PROFILE.tier,
+      used: DEMO_PROFILE.messages_used_this_month,
+    };
+  }
+
+  const { createServerClient } = await import("@/lib/supabase/server");
   const supabase = createServerClient();
   const {
     data: { session },
@@ -28,8 +38,15 @@ export default async function DashboardPage() {
     .eq("id", session.user.id)
     .single() as { data: { tier: string; messages_used_this_month: number; full_name: string | null } | null };
 
-  const tier = profile?.tier ?? "free";
-  const used = profile?.messages_used_this_month ?? 0;
+  return {
+    fullName: profile?.full_name ?? null,
+    tier: profile?.tier ?? "free",
+    used: profile?.messages_used_this_month ?? 0,
+  };
+}
+
+export default async function DashboardPage() {
+  const { fullName, tier, used } = await getProfileData();
   const limit = tier === "pro" ? 5000 : 50;
   const usagePct = Math.min(100, Math.round((used / limit) * 100));
 
@@ -37,7 +54,7 @@ export default async function DashboardPage() {
     <div className="space-y-8">
       <div>
         <h1 className="text-3xl font-bold">
-          Welcome back{profile?.full_name ? `, ${profile.full_name}` : ""}!
+          Welcome back{fullName ? `, ${fullName}` : ""}!
         </h1>
         <p className="text-muted-foreground mt-1">
           Here&apos;s an overview of your NexaBase account.
