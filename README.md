@@ -1,10 +1,10 @@
-# NexaBase — Production-Ready AI SaaS Starter
+# NexaBase — AI SaaS Starter
 
 > **Next.js 14 (App Router) · FastAPI · LangChain · Supabase · Stripe · OpenAI · Bun**
 
 **[Live Demo](https://nexabase.vercel.app)**
 
-NexaBase is a full-stack, production-ready SaaS starter kit that gives you everything you need to ship an AI-powered application:
+NexaBase is a full-stack, SaaS starter kit that gives you everything you need to ship an AI-powered application:
 
 - **Auth** — Supabase Auth with JWT, protected routes via Next.js middleware
 - **AI Chat** — OpenAI GPT-4o mini via LangChain, conversation history, streaming SSE
