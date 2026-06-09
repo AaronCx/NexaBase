@@ -16,8 +16,19 @@ from app.models.schemas import (
 router = APIRouter(prefix="/auth", tags=["auth"])
 
 
+def _client_ip(request: Request) -> str:
+    """Real client IP: first hop of X-Forwarded-For (set by nginx/Render),
+    falling back to the direct connection address."""
+    forwarded = request.headers.get("X-Forwarded-For")
+    if forwarded:
+        first_hop = forwarded.split(",")[0].strip()
+        if first_hop:
+            return first_hop
+    return request.client.host if request.client else "unknown"
+
+
 def _check_auth_rate_limit(request: Request) -> None:
-    client_ip = request.client.host if request.client else "unknown"
+    client_ip = _client_ip(request)
     allowed, _ = auth_limiter.is_allowed(client_ip)
     if not allowed:
         raise HTTPException(
