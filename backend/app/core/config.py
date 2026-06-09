@@ -41,9 +41,19 @@ class Settings(BaseSettings):
         case_sensitive = True
 
 
+_DEFAULT_SECRET_KEY = "change-me-in-production"
+
+
 @lru_cache()
 def get_settings() -> Settings:
-    return Settings()
+    s = Settings()
+    if not s.DEBUG and s.SECRET_KEY in ("", _DEFAULT_SECRET_KEY):
+        raise RuntimeError(
+            "SECRET_KEY is unset or still the insecure default. "
+            "Set a strong SECRET_KEY environment variable before running "
+            "with DEBUG=False."
+        )
+    return s
 
 
 settings = get_settings()
