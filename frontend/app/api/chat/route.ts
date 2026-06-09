@@ -1,6 +1,52 @@
 import { NextResponse } from "next/server";
+import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
+import { cookies } from "next/headers";
+import { isSupabaseConfigured } from "@/lib/supabase/server";
+import type { Database } from "@/types/supabase";
+
+export const dynamic = "force-dynamic";
+
+// Simple in-memory sliding-window rate limit: 20 requests per minute per user.
+const RATE_LIMIT_MAX = 20;
+const RATE_LIMIT_WINDOW_MS = 60_000;
+const requestLog = new Map<string, number[]>();
+
+function isRateLimited(userId: string): boolean {
+  const now = Date.now();
+  const cutoff = now - RATE_LIMIT_WINDOW_MS;
+  const timestamps = (requestLog.get(userId) ?? []).filter((t) => t > cutoff);
+  if (timestamps.length >= RATE_LIMIT_MAX) {
+    requestLog.set(userId, timestamps);
+    return true;
+  }
+  timestamps.push(now);
+  requestLog.set(userId, timestamps);
+  return false;
+}
 
 export async function POST(request: Request) {
+  // Require a valid Supabase session — this route proxies OpenAI with a
+  // server-side API key and must never be publicly reachable.
+  if (!isSupabaseConfigured()) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const supabase = createRouteHandlerClient<Database>({ cookies });
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  if (isRateLimited(session.user.id)) {
+    return NextResponse.json(
+      { error: "Too many requests. Please slow down." },
+      { status: 429 }
+    );
+  }
+
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) {
     return NextResponse.json(
