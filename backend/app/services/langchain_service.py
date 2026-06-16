@@ -7,8 +7,7 @@ Provides a streaming-capable chat interface backed by LangChain and OpenAI.
 import uuid
 from typing import AsyncIterator, List, Optional
 
-from langchain.callbacks import AsyncIteratorCallbackHandler
-from langchain.schema import AIMessage, HumanMessage, SystemMessage
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 from langchain_openai import ChatOpenAI
 
 from app.core.config import settings
@@ -35,13 +34,14 @@ def _build_lc_messages(
     return messages
 
 
-def get_llm(streaming: bool = False, callbacks=None) -> ChatOpenAI:
+def get_llm(streaming: bool = False) -> ChatOpenAI:
     return ChatOpenAI(
         model=settings.OPENAI_MODEL,
-        openai_api_key=settings.OPENAI_API_KEY,
+        api_key=settings.OPENAI_API_KEY,
         temperature=0.7,
         streaming=streaming,
-        callbacks=callbacks or [],
+        # Emit token-usage metadata on the final streamed chunk.
+        stream_usage=True,
     )
 
 
@@ -55,11 +55,10 @@ async def chat(
     llm = get_llm()
     lc_messages = _build_lc_messages(history, message)
 
-    response = await llm.agenerate([lc_messages])
-    generation = response.generations[0][0]
-    reply = generation.text
-    token_info = response.llm_output or {}
-    tokens_used = token_info.get("token_usage", {}).get("total_tokens", 0)
+    response = await llm.ainvoke(lc_messages)
+    reply = response.text() if callable(getattr(response, "text", None)) else str(response.content)
+    usage = response.usage_metadata or {}
+    tokens_used = usage.get("total_tokens", 0)
 
     conv_id = conversation_id or str(uuid.uuid4())
 
@@ -80,24 +79,26 @@ async def chat_stream(
     conversation_id: Optional[str] = None,
 ) -> AsyncIterator[str]:
     """Streaming chat completion via Server-Sent Events."""
-    handler = AsyncIteratorCallbackHandler()
-    llm = get_llm(streaming=True, callbacks=[handler])
+    llm = get_llm(streaming=True)
     lc_messages = _build_lc_messages(history, message)
-
-    import asyncio
 
     full_reply = []
 
-    async def _run():
-        await llm.agenerate([lc_messages])
-
-    task = asyncio.create_task(_run())
-
-    async for token in handler.aiter():
-        full_reply.append(token)
-        yield token
-
-    await task
+    async for chunk in llm.astream(lc_messages):
+        content = chunk.content
+        if not content:
+            continue
+        # Content may be a string or a list of content blocks (v1 message format).
+        if isinstance(content, str):
+            token = content
+        else:
+            token = "".join(
+                part.get("text", "") if isinstance(part, dict) else str(part)
+                for part in content
+            )
+        if token:
+            full_reply.append(token)
+            yield token
 
     conv_id = conversation_id or str(uuid.uuid4())
     await _persist_messages(user_id, conv_id, message, "".join(full_reply))
