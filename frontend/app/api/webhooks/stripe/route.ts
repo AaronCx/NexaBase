@@ -18,7 +18,7 @@ export async function POST(req: Request) {
   const stripe = getStripe();
   const supabase = getSupabase();
   const body = await req.text();
-  const sig = headers().get("stripe-signature");
+  const sig = (await headers()).get("stripe-signature");
 
   if (!sig) {
     return NextResponse.json({ error: "Missing stripe-signature" }, { status: 400 });
