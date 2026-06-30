@@ -1,8 +1,5 @@
 import { NextResponse } from "next/server";
-import { createRouteHandlerClient } from "@supabase/auth-helpers-nextjs";
-import { cookies } from "next/headers";
-import { isSupabaseConfigured } from "@/lib/supabase/server";
-import type { Database } from "@/types/supabase";
+import { createServerClient, isSupabaseConfigured } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
 
@@ -31,7 +28,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const supabase = createRouteHandlerClient<Database>({ cookies });
+  const supabase = createServerClient();
   const {
     data: { session },
   } = await supabase.auth.getSession();
