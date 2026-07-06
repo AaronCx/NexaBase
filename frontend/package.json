@@ -41,7 +41,7 @@
     "@types/react-syntax-highlighter": "^15.5.13",
     "autoprefixer": "^10.4.20",
     "eslint": "^8",
-    "eslint-config-next": "15.5.18",
+    "eslint-config-next": "16.2.10",
     "postcss": "^8.4.49",
     "tailwindcss": "^4.3.1",
     "typescript": "^5"
